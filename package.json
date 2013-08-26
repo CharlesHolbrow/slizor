@@ -1,0 +1,47 @@
+{
+  "name": "slizor",
+  "description": "Sampler Control Instrument using the monome arc",
+  "version": "0.1.0",
+  "homepage": "https://github.com/charlesholbrow/slizor",
+  "author": {
+    "name": "Charles Holbrow",
+    "email": "charlesholbrow@gmail.com",
+    "url": "www.CharlesHolbrow.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/charlesholbrow/slizor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/charlesholbrow/slizor/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/charlesholbrow/slizor/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "out/lib/slizor",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "dependencies": {
+    "monode": "2.2.1",
+    "coremidi": "0.1.1",
+    "midi-api": "0.2.0"
+  },
+  "devDependencies": {
+    "grunt-contrib-watch": "~0.5.0",
+    "grunt-contrib-coffee": "~0.7.0",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-coffeelint": "~0.0.7",
+    "grunt-simple-mocha": "~0.4.0",
+    "should": "~1.2.2",
+    "mocha-cakes": "~0.9.0",
+    "grunt": "~0.4.1"
+  },
+  "keywords": []
+}
