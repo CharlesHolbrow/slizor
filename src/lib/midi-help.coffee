@@ -21,13 +21,16 @@ class MidiMsgType
     byStatus[status] = @
     byName[name] = @
 
-new MidiMsgType 'noteOn',     2,  true,   0x90
-new MidiMsgType 'noteOff',    2,  true,   0x80
-new MidiMsgType 'pitchBend',  2,  true,   0xE0, true
-new MidiMsgType 'cc',         2,  true,   0xB0
-new MidiMsgType 'clock',      0,  false,  0xF8
+new MidiMsgType 'noteOn',       2,  true,   0x90
+new MidiMsgType 'noteOff',      2,  true,   0x80
+new MidiMsgType 'pitchBend',    2,  true,   0xE0, true
+new MidiMsgType 'cc',           2,  true,   0xB0
+new MidiMsgType 'clock',        0,  false,  0xF8
+new MidiMsgType 'start',        0,  false,  0xFA
+new MidiMsgType 'songPosition', 2,  false,  0xF2, true
 
 class MidiStreamParser extends events.EventEmitter
+
   constructor: ->
     @super
     @_midiMsgType = undefined
@@ -37,19 +40,24 @@ class MidiStreamParser extends events.EventEmitter
       nibble2: undefined
       status: undefined
       firstByte: undefined
-  parseStatus: (byte)->
+
+  _parseStatus: (byte)->
     @_midi.status = byte
     @_midi.nibble1 = byte & 0xF0
     @_midi.nibble2 = byte & 0x0F
-
     @_midiMsgType = byStatus[@_midi.nibble1]
     @_midiMsgType = byStatus[byte] unless @_midiMsgType
-
+    @_midi.firstByte = undefined
+    unless @_midiMsgType
+      @emit 'mysteryStatusByte', byte
+      return
     if @_midiMsgType.size == 0
       @emit @_midiMsgType.name
-      @_midi.firstByte = undefined
 
-  parseFirst: (byte)->
+  _parseFirst: (byte)->
+    unless @_midiMsgType
+      @emit 'mysteryDataByte', byte
+      return
     if @_midiMsgType.size == 1
       @emit @_midiMsgType.name, byte
       @_midi.status = undefined
@@ -57,14 +65,23 @@ class MidiStreamParser extends events.EventEmitter
       # expect another byte
       @_midi.firstByte = byte
 
-  parseSecond: (byte)->
-    @_midi.secondByte = byte
-    @emit @_midiMsgType.name, @_midi.firstByte, byte, @_midi.nibble2
+  _parseSecond: (byte)->
+    if @_midiMsgType.isFourteenBit
+      @emit @_midiMsgType.name,
+        @_midi.firstByte * 128 + byte,
+        @_midi.nibble2 if @_midiMsgType.hasChannel
+    else
+      @emit @_midiMsgType.name, @_midi.firstByte, byte, @_midi.nibble2
+    @_midi.status = undefined
     @_midi.firstByte = undefined
 
-  accept: (byte)->
-    if byte & 128 then @parseStatus byte
-    else if @_midi.firstByte is undefined then @parseFirst byte
-    else @parseSecond byte
+  parseByte: (byte)->
+    if byte & 128 then @_parseStatus byte
+    else if @_midi.firstByte is undefined then @_parseFirst byte
+    else @_parseSecond byte
+  parseArray: (input)->
+    @parseByte(byte) for byte in input
+  parseBytes: ->
+    @parseByte(byte) for byte in arguments
 
 module.exports.MidiStreamParser = MidiStreamParser

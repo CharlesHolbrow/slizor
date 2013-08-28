@@ -6,31 +6,48 @@ help = require('../lib/midi-help')
 MidiStreamParser = help.MidiStreamParser
 
 describe 'MidiStreamParser', ->
-  parser = new MidiStreamParser
   it 'should be an EventEmitter', ->
+    parser = new MidiStreamParser
     parser.should.be.an.instanceOf events.EventEmitter
 
-  describe 'accept', ->
-    it 'should accept a byte as an argument', ->
-      parser.accept.length.should.eql(1)
-    it '0x91 should be a noteOn message', ->
-      parser.accept(0x91)
-      should.exist(parser._midiMsgType)
+  describe 'parseByte, parseBytes, parseArray', ->
+
+    it '0x92 0x93 60 80 should be a noteOn message on channel 3', (done)->
+      @timeout 200
+      parser = new MidiStreamParser
+      parser.on 'noteOn', (note, vel, channel)->
+        (3).should.eql channel
+        done()
+      parser.parseArray [0x92, 0x93, 60, 80]
+
     it '0x91, 0x64, 0x65 should emit a "noteOn" with arguments: ' +
        'noteNumber = 100, velocity = 101, channel = 1', (done)->
       @timeout(200)
+      parser = new MidiStreamParser
       parser.on 'noteOn', (note, vel, ch)->
         note.should.eql 100
         vel.should.eql 101
         ch.should.eql 1
         done()
-      parser.accept(0x64)
-      parser.accept(0x65)
+      parser.parseByte 0x91
+      parser.parseByte 0x64
+      parser.parseByte 0x65
 
     it '0xF8 should emit "clock"', (done)->
       @timeout 200
+      parser = new MidiStreamParser
       parser.on 'clock', -> done()
-      parser.accept 0xF8
+      parser.parseByte 0xF8
+
+    it '0xE3, 64, 5 should emit "pitchBend" 8197, 3 (+5 PB, ch 3)', (done)->
+      @timeout 200
+      parser = new MidiStreamParser
+      parser.on 'pitchBend', (value, channel)->
+        (8197).should.eql value
+        (3).should.eql channel
+        done()
+      parser.parseBytes 0xE3, 64, 5
+
 
 ###
 ======== A Handy Little Mocha Reference ========
