@@ -26,12 +26,12 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "prepublish": "grunt compile"
   },
   "dependencies": {
     "monode": "2.2.1",
-    "coremidi": "0.1.1",
-    "midi-api": "0.2.0"
+    "midi": "0.7.0"
   },
   "devDependencies": {
     "grunt-contrib-watch": "~0.5.0",

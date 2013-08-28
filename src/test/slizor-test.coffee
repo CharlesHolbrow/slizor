@@ -51,10 +51,3 @@ Should assertions:
   user.should.have.property('pets').with.lengthOf(4)
   user.should.be.a('object').and.have.property('name', 'tj')
 ###
-
-describe 'Awesome', ()->
-  describe '#of()', ()->
-
-    it 'awesome', ()->
-      slizor.awesome().should.eql('awesome')
-
