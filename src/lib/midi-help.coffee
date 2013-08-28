@@ -21,19 +21,21 @@ class MidiMsgType
     byStatus[status] = @
     byName[name] = @
 
-new MidiMsgType 'noteOn',       2,  true,   0x90
-new MidiMsgType 'noteOff',      2,  true,   0x80
-new MidiMsgType 'pitchBend',    2,  true,   0xE0, true
-new MidiMsgType 'cc',           2,  true,   0xB0
-new MidiMsgType 'clock',        0,  false,  0xF8
-new MidiMsgType 'start',        0,  false,  0xFA
-new MidiMsgType 'songPosition', 2,  false,  0xF2, true
+new MidiMsgType 'noteOn',           2,  true,   0x90
+new MidiMsgType 'noteOff',          2,  true,   0x80
+new MidiMsgType 'pitchBend',        2,  true,   0xE0, true
+new MidiMsgType 'cc',               2,  true,   0xB0
+new MidiMsgType 'clock',            0,  false,  0xF8
+new MidiMsgType 'start',            0,  false,  0xFA
+new MidiMsgType 'songPosition',     2,  false,  0xF2, true
+new MidiMsgType 'channelPressure',  1,  true,   0xD0
 
 class MidiStreamParser extends events.EventEmitter
 
   constructor: ->
     @super
     @_midiMsgType = undefined
+    @_sysex = false
     @_midi =
       size: undefined
       nibble1: undefined
@@ -59,7 +61,7 @@ class MidiStreamParser extends events.EventEmitter
       @emit 'mysteryDataByte', byte
       return
     if @_midiMsgType.size == 1
-      @emit @_midiMsgType.name, byte
+      @emit @_midiMsgType.name, byte, @_midi.nibble2 if @_midiMsgType.hasChannel
       @_midi.status = undefined
     else
       # expect another byte
