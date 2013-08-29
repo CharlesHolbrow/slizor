@@ -9,7 +9,7 @@ Licensed under the MIT license.
 ###
 
 midi  = require('midi')
-help  = require('./midi-help')
+help  = require('midi-help')
 
 noteOn    = help.noteOn
 noteOff   = help.noteOff
