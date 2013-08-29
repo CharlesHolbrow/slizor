@@ -39,15 +39,20 @@ describe 'MidiStreamParser', ->
       parser.on 'clock', -> done()
       parser.parseByte 0xF8
 
-    it '0xE3, 64, 5 should emit "pitchBend" 8197, 3 (+5 PB, ch 3)', (done)->
+    it '0xE3, 5, 64 should emit "pitchBend" 8197, 3 (+5 PB, ch 3)', (done)->
       @timeout 200
       parser = new MidiStreamParser
       parser.on 'pitchBend', (value, channel)->
         (8197).should.eql value
         (3).should.eql channel
         done()
-      parser.parseBytes 0xE3, 64, 5
+      parser.parseBytes 0xE3, 5, 64
 
+describe 'toArray', ->
+  describe 'pitchBend', ->
+    it 'should convert (8197, 3) to [0xE3, 5, 64]', ->
+      ans = help.types.pitchBend.toArray(8197, 3)
+      ans.should.eql [0xE3, 5, 64]
 
 ###
 ======== A Handy Little Mocha Reference ========

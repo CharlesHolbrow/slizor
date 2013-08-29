@@ -14,12 +14,37 @@ module.exports =
     [0xE0 + channel, value % 128, Math.floor(value / 128)]
 
 
-byStatus = []
-byName = {}
+module.exports.byStatus = byStatus  = []
+module.exports.types    = types     = {}
+
 class MidiMsgType
   constructor: (@name, @size, @hasChannel, @status, @isFourteenBit = false)->
     byStatus[status] = @
-    byName[name] = @
+    types[name] = @
+
+  toArray: (one, two, three)->
+
+    if @isFourteenBit
+      # (value = 8192, channel = 0)
+      one = one or 8192
+      return [@status + two or 0, one % 128, Math.floor(one / 128)]
+
+    if @size is 2
+      # (note, velocity, channel = 0)
+      # (cc#,  value,    channel = 0)
+      return [@status + three or 0, one, two]
+
+    if @size is 1
+      if @hasChannel
+        # (value, channel = 0)
+        return [@status + two or 0, one]
+      else
+        # (value)
+        return [@status, one]
+
+    if @size is 0
+      return [@status]
+
 
 new MidiMsgType 'noteOn',           2,  true,   0x90
 new MidiMsgType 'noteOff',          2,  true,   0x80
@@ -70,7 +95,7 @@ class MidiStreamParser extends events.EventEmitter
   _parseSecond: (byte)->
     if @_midiMsgType.isFourteenBit
       @emit @_midiMsgType.name,
-        @_midi.firstByte * 128 + byte,
+        @_midi.firstByte + (byte * 128),
         @_midi.nibble2 if @_midiMsgType.hasChannel
     else
       @emit @_midiMsgType.name, @_midi.firstByte, byte, @_midi.nibble2
